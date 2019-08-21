@@ -2,6 +2,7 @@ package com.RNFetchBlob;
 
 import android.content.res.AssetManager;
 import android.content.Context;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
@@ -103,12 +104,11 @@ public class RNFetchBlobUtils {
 
     public static OkHttpClient.Builder getClientCertificateOkHttpClient(String clientCertificate, String clientCertificatePassword, OkHttpClient client) {
         try {
+            Log.i("TOBY", "in getClientCertificateOkHttpClient");
             Context appCtx = RNFetchBlob.RCTContext.getApplicationContext();
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             AssetManager assetManager = appCtx.getAssets();
-            // String clientCertificate = appCtx.getString("clientCertificate");
             InputStream fis = assetManager.open(clientCertificate);
-            // String clientCertPassword = appCtx.getString("clientCertificatePassword");
             keyStore.load(fis, clientCertificatePassword.toCharArray());
 
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");

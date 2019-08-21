@@ -2,6 +2,7 @@ package com.RNFetchBlob;
 
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import android.util.Log;
 
 class RNFetchBlobConfig {
 
@@ -52,6 +53,9 @@ class RNFetchBlobConfig {
 
         this.nqmClientCertificate = options.hasKey("nqmClientCertificate") ? options.getString("nqmClientCertificate") : null;
         this.nqmClientCertificatePassword = options.hasKey("nqmClientCertificatePassword") ? options.getString("nqmClientCertificatePassword") : null;
+
+        Log.e("TOBY", "certificate is " + this.nqmClientCertificate);
+        Log.e("TOBY", "certificate password is " + this.nqmClientCertificatePassword);
     }
 
 }
