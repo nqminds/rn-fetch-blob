@@ -1,11 +1,16 @@
 package com.RNFetchBlob;
 
+import android.content.res.AssetManager;
+import android.content.Context;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.cert.CertificateException;
+import java.io.*;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -13,6 +18,8 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 
 import okhttp3.OkHttpClient;
 
@@ -87,6 +94,42 @@ public class RNFetchBlobUtils {
                     return true;
                 }
             });
+
+            return builder;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static OkHttpClient.Builder getClientCertificateOkHttpClient(String clientCertificate, String clientCertificatePassword, OkHttpClient client) {
+        try {
+            Context appCtx = RNFetchBlob.RCTContext.getApplicationContext();
+            KeyStore keyStore = KeyStore.getInstance("PKCS12");
+            AssetManager assetManager = appCtx.getAssets();
+            // String clientCertificate = appCtx.getString("clientCertificate");
+            InputStream fis = assetManager.open(clientCertificate);
+            // String clientCertPassword = appCtx.getString("clientCertificatePassword");
+            keyStore.load(fis, clientCertificatePassword.toCharArray());
+
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
+            kmf.init(keyStore, clientCertificatePassword.toCharArray());
+
+            KeyManager[] keyManagers = kmf.getKeyManagers();
+
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(keyManagers, null, new java.security.SecureRandom());
+
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            OkHttpClient.Builder builder = client.newBuilder();
+            builder.sslSocketFactory(sslSocketFactory);
+            // builder.hostnameVerifier(new HostnameVerifier() {
+            //     @Override
+            //     public boolean verify(String hostname, SSLSession session) {
+            //         return true;
+            //     }
+            // });
 
             return builder;
         } catch (Exception e) {

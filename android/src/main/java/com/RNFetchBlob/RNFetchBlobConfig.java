@@ -19,6 +19,9 @@ class RNFetchBlobConfig {
     public Boolean followRedirect = true;
     public ReadableArray binaryContentTypes = null;
 
+    public String nqmClientCertificate;
+    public String nqmClientCertificatePassword;
+
     RNFetchBlobConfig(ReadableMap options) {
         if(options == null)
             return;
@@ -46,6 +49,9 @@ class RNFetchBlobConfig {
         if(options.hasKey("timeout")) {
             this.timeout = options.getInt("timeout");
         }
+
+        this.nqmClientCertificate = options.hasKey("nqmClientCertificate") ? options.getString("nqmClientCertificate") : null;
+        this.nqmClientCertificatePassword = options.hasKey("nqmClientCertificatePassword") ? options.getString("nqmClientCertificatePassword") : null;
     }
 
 }
