@@ -22,6 +22,10 @@ import javax.net.ssl.X509TrustManager;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 
+import android.util.Base64;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+
 import okhttp3.OkHttpClient;
 
 
