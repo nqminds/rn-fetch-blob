@@ -136,4 +136,122 @@ public class RNFetchBlobUtils {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Produces a KeyStore from a String containing a PEM certificate (typically, the server's CA certificate)
+     * @param certificateString A String containing the PEM-encoded certificate
+     * @return a KeyStore (to be used as a trust store) that contains the certificate
+     * @throws Exception
+     */
+    private static KeyStore loadPEMTrustStore(String certificateString) throws Exception {
+
+        byte[] der = loadPemCertificate(new ByteArrayInputStream(certificateString.getBytes()));
+        ByteArrayInputStream derInputStream = new ByteArrayInputStream(der);
+        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+        X509Certificate cert = (X509Certificate) certificateFactory.generateCertificate(derInputStream);
+        String alias = cert.getSubjectX500Principal().getName();
+
+        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        trustStore.load(null);
+        trustStore.setCertificateEntry(alias, cert);
+
+        return trustStore;
+    }
+
+    /**
+     * Reads and decodes a base-64 encoded DER certificate (a .pem certificate), typically the server's CA cert.
+     * @param certificateStream an InputStream from which to read the cert
+     * @return a byte[] containing the decoded certificate
+     * @throws IOException
+     */
+    private static byte[] loadPemCertificate(InputStream certificateStream) throws IOException {
+
+        byte[] der = null;
+        BufferedReader br = null;
+
+        try {
+            StringBuilder buf = new StringBuilder();
+            br = new BufferedReader(new InputStreamReader(certificateStream));
+
+            String line = br.readLine();
+            while(line != null) {
+                if(!line.startsWith("--")){
+                    buf.append(line);
+                }
+                line = br.readLine();
+            }
+
+            String pem = buf.toString();
+            der = Base64.decode(pem, Base64.DEFAULT);
+
+        } finally {
+           if(br != null) {
+               br.close();
+           }
+        }
+
+        return der;
+    }
+
+    /**
+     * Produces a KeyStore from a PKCS12 (.p12) certificate file, typically the client certificate
+     * @param p12Base64 The base64-encoded p12 file.
+     * @param clientCertPassword Password for the certificate
+     * @return A KeyStore containing the certificate from the certificateFile
+     * @throws Exception
+     */
+    private static KeyStore loadPKCS12KeyStore(String p12Base64, String clientCertPassword) throws Exception {
+        KeyStore keyStore = null;
+        byte[] p12Decoded = Base64.decode(p12Base64, Base64.DEFAULT);
+        InputStream fis = new ByteArrayInputStream(p12Decoded);
+        try {
+            keyStore = KeyStore.getInstance("PKCS12");
+            keyStore.load(fis, clientCertPassword.toCharArray());
+        } finally {
+            try {
+                if(fis != null) {
+                    fis.close();
+                }
+            } catch(IOException ex) {
+                // ignore
+            }
+        }
+        return keyStore;
+    }
+
+    public static OkHttpClient.Builder getClientCertCAOkHttpClient(String caCertificate, String p12Base64ClientCertificate, String clientCertificatePassword, OkHttpClient client) {
+        try {
+            Log.i("TOBY", "in getClientCertCAOkHttpClient");
+
+            // Create a trust store from the CA certificate.
+            KeyStore trustStore = loadPEMTrustStore(caCertificate);
+            TrustManager[] trustManagers = {new RNFetchBlobTrustManager(trustStore)};
+
+            // Load the client certificate.
+            KeyStore keyStore = loadPKCS12KeyStore(p12Base64ClientCertificate, clientCertificatePassword);
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
+            kmf.init(keyStore, clientCertificatePassword.toCharArray());
+            KeyManager[] keyManagers = kmf.getKeyManagers();
+
+            // Create a context using the custom key and trust managers.
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(keyManagers, trustManagers, null);
+
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            OkHttpClient.Builder builder = client.newBuilder();
+            builder.sslSocketFactory(sslSocketFactory);
+            // builder.hostnameVerifier(new HostnameVerifier() {
+            //     @Override
+            //     public boolean verify(String hostname, SSLSession session) {
+            //         return true;
+            //     }
+            // });
+
+            return builder;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

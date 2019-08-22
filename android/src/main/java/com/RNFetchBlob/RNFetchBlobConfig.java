@@ -20,6 +20,7 @@ class RNFetchBlobConfig {
     public Boolean followRedirect = true;
     public ReadableArray binaryContentTypes = null;
 
+    public String nqmCACertificate;
     public String nqmClientCertificate;
     public String nqmClientCertificatePassword;
 
@@ -51,9 +52,11 @@ class RNFetchBlobConfig {
             this.timeout = options.getInt("timeout");
         }
 
+        this.nqmCACertificate = options.hasKey("nqmCACertificate") ? options.getString("nqmCACertificate") : null;
         this.nqmClientCertificate = options.hasKey("nqmClientCertificate") ? options.getString("nqmClientCertificate") : null;
         this.nqmClientCertificatePassword = options.hasKey("nqmClientCertificatePassword") ? options.getString("nqmClientCertificatePassword") : null;
 
+        Log.e("TOBY", "CA certificate is " + this.nqmCACertificate);
         Log.e("TOBY", "certificate is " + this.nqmClientCertificate);
         Log.e("TOBY", "certificate password is " + this.nqmClientCertificatePassword);
     }
