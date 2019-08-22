@@ -25,7 +25,8 @@ public class RNFetchBlobTrustManager implements X509TrustManager {
      * @throws NoSuchAlgorithmException
      * @throws KeyStoreException
      */
-    public RNFetchBlobTrustManager(KeyStore trustStore) throws NoSuchAlgorithmException, KeyStoreException {
+    public RNFetchBlobTrustManager(boolean trustSystem, KeyStore trustStore) throws NoSuchAlgorithmException, KeyStoreException {
+        this.trustSystem = trustSystem;
         this.trustStore = trustStore;
 
         TrustManagerFactory originalTrustManagerFactory = TrustManagerFactory.getInstance("X509");
@@ -50,6 +51,14 @@ public class RNFetchBlobTrustManager implements X509TrustManager {
     public void checkClientTrusted(X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
     }
 
+    private void doCustomCheck(X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
+        CertPathValidator validator = CertPathValidator.getInstance("PKIX");
+        CertificateFactory factory = CertificateFactory.getInstance("X509");
+        CertPath certPath = factory.generateCertPath(Arrays.asList(chain));
+        PKIXParameters params = new PKIXParameters(trustStore);
+        params.setRevocationEnabled(false);
+        validator.validate(certPath, params);
+    }
 
     /**
      * Given the partial or complete certificate chain provided by the peer,
@@ -63,20 +72,18 @@ public class RNFetchBlobTrustManager implements X509TrustManager {
      * @throws java.security.cert.CertificateException
      */
     public void checkServerTrusted(X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
-        try {
-            originalX509TrustManager.checkServerTrusted(chain, authType);
-        } catch(CertificateException originalException) {
+        if (this.trustSystem) {
             try {
-                CertPathValidator validator = CertPathValidator.getInstance("PKIX");
-                CertificateFactory factory = CertificateFactory.getInstance("X509");
-                CertPath certPath = factory.generateCertPath(Arrays.asList(chain));
-                PKIXParameters params = new PKIXParameters(trustStore);
-                params.setRevocationEnabled(false);
-                validator.validate(certPath, params);
-            } catch(Exception ex) {
-                throw originalException;
+                originalX509TrustManager.checkServerTrusted(chain, authType);
+            } catch(CertificateException originalException) {
+                try {
+                    this.doCustomCheck(chain, authType);
+                } catch(Exception ex) {
+                    throw originalException;
+                }
             }
+        } else {
+            this.doCustomCheck(chain, authType);
         }
-
     }
 }

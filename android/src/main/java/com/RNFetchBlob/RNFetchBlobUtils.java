@@ -223,13 +223,13 @@ public class RNFetchBlobUtils {
         return keyStore;
     }
 
-    public static OkHttpClient.Builder getClientCertCAOkHttpClient(String caCertificate, String p12Base64ClientCertificate, String clientCertificatePassword, OkHttpClient client) {
+    public static OkHttpClient.Builder getClientCertCAOkHttpClient(boolean trustSystem, String caCertificate, String p12Base64ClientCertificate, String clientCertificatePassword, OkHttpClient client) {
         try {
             Log.i("TOBY", "in getClientCertCAOkHttpClient");
 
             // Create a trust store from the CA certificate.
             KeyStore trustStore = loadPEMTrustStore(caCertificate);
-            TrustManager[] trustManagers = {new RNFetchBlobTrustManager(trustStore)};
+            TrustManager[] trustManagers = {new RNFetchBlobTrustManager(trustSystem, trustStore)};
 
             // Load the client certificate.
             KeyStore keyStore = loadPKCS12KeyStore(p12Base64ClientCertificate, clientCertificatePassword);

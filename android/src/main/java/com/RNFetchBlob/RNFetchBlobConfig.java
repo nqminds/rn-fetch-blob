@@ -2,7 +2,6 @@ package com.RNFetchBlob;
 
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import android.util.Log;
 
 class RNFetchBlobConfig {
 
@@ -52,13 +51,12 @@ class RNFetchBlobConfig {
             this.timeout = options.getInt("timeout");
         }
 
+        // Default to not using OS trust store.
+        this.nqmTrustSystem = options.hasKey("nqmTrustSystem") ? options.getBoolean("nqmTrustSystem") : false;
+        // Cache the passed certificate data.
         this.nqmCACertificate = options.hasKey("nqmCACertificate") ? options.getString("nqmCACertificate") : null;
         this.nqmClientCertificate = options.hasKey("nqmClientCertificate") ? options.getString("nqmClientCertificate") : null;
         this.nqmClientCertificatePassword = options.hasKey("nqmClientCertificatePassword") ? options.getString("nqmClientCertificatePassword") : null;
-
-        Log.e("TOBY", "CA certificate is " + this.nqmCACertificate);
-        Log.e("TOBY", "certificate is " + this.nqmClientCertificate);
-        Log.e("TOBY", "certificate password is " + this.nqmClientCertificatePassword);
     }
 
 }
