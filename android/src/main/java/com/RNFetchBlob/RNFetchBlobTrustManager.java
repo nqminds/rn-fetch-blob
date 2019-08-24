@@ -53,12 +53,16 @@ public class RNFetchBlobTrustManager implements X509TrustManager {
     }
 
     private void doCustomCheck(X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
-        CertPathValidator validator = CertPathValidator.getInstance("PKIX");
-        CertificateFactory factory = CertificateFactory.getInstance("X509");
-        CertPath certPath = factory.generateCertPath(Arrays.asList(chain));
-        PKIXParameters params = new PKIXParameters(trustStore);
-        params.setRevocationEnabled(false);
-        validator.validate(certPath, params);
+        try {
+            CertPathValidator validator = CertPathValidator.getInstance("PKIX");
+            CertificateFactory factory = CertificateFactory.getInstance("X509");
+            CertPath certPath = factory.generateCertPath(Arrays.asList(chain));
+            PKIXParameters params = new PKIXParameters(trustStore);
+            params.setRevocationEnabled(false);
+            validator.validate(certPath, params);
+        } catch(CertificateException ex) {
+            throw ex;
+        }
     }
 
     /**
