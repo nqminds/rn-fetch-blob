@@ -18,6 +18,7 @@ import java.util.List;
 public class RNFetchBlobTrustManager implements X509TrustManager {
 
     private final X509TrustManager originalX509TrustManager;
+    private Boolean trustSystem;
     private final KeyStore trustStore;
 
     /**
