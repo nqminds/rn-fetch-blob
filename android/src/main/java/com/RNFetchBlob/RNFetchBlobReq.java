@@ -226,8 +226,6 @@ public class RNFetchBlobReq extends BroadcastReceiver implements Runnable {
         try {
             if (this.options.nqmClientCertificate != null) {
                 clientBuilder = RNFetchBlobUtils.getClientCertCAOkHttpClient(this.options.nqmTrustSystem, this.options.nqmCACertificate, this.options.nqmClientCertificate, this.options.nqmClientCertificatePassword, client);
-            } else if (this.options.nqmClientCertificate != null) {
-                clientBuilder = RNFetchBlobUtils.getClientCertificateOkHttpClient(this.options.nqmClientCertificate, this.options.nqmClientCertificatePassword, client);
             } else if (this.options.trusty) {
                 // use trusty SSL socket
                 clientBuilder = RNFetchBlobUtils.getUnsafeOkHttpClient(client);

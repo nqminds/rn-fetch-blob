@@ -66,7 +66,8 @@ public class RNFetchBlobTrustManager implements X509TrustManager {
      * for client SSL authentication based on the authentication type. The authentication type is
      * determined by the actual certificate used. For instance, if RSAPublicKey is used, the authType should be "RSA".
      * Checking is case-sensitive.
-     * Defers to the default trust manager first, checks the cert supplied in the ctor if that fails.
+     * If `trustSystem` is set, defers to the default trust manager first, checks the cert supplied in the ctor if
+     * that fails.
      * @param chain the server's certificate chain
      * @param authType the authentication type based on the client certificate
      * @throws java.security.cert.CertificateException

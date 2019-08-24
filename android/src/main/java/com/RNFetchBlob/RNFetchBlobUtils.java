@@ -106,41 +106,6 @@ public class RNFetchBlobUtils {
         }
     }
 
-    public static OkHttpClient.Builder getClientCertificateOkHttpClient(String clientCertificate, String clientCertificatePassword, OkHttpClient client) {
-        try {
-            Log.i("TOBY", "in getClientCertificateOkHttpClient");
-            Context appCtx = RNFetchBlob.RCTContext.getApplicationContext();
-            KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            AssetManager assetManager = appCtx.getAssets();
-            InputStream fis = assetManager.open(clientCertificate);
-            keyStore.load(fis, clientCertificatePassword.toCharArray());
-
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
-            kmf.init(keyStore, clientCertificatePassword.toCharArray());
-
-            KeyManager[] keyManagers = kmf.getKeyManagers();
-
-            SSLContext sslContext = SSLContext.getInstance("SSL");
-            sslContext.init(keyManagers, null, new java.security.SecureRandom());
-
-            // Create an ssl socket factory with our all-trusting manager
-            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-
-            OkHttpClient.Builder builder = client.newBuilder();
-            builder.sslSocketFactory(sslSocketFactory);
-            // builder.hostnameVerifier(new HostnameVerifier() {
-            //     @Override
-            //     public boolean verify(String hostname, SSLSession session) {
-            //         return true;
-            //     }
-            // });
-
-            return builder;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * Produces a KeyStore from a String containing a PEM certificate (typically, the server's CA certificate)
      * @param certificateString A String containing the PEM-encoded certificate

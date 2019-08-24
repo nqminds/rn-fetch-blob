@@ -19,6 +19,7 @@ class RNFetchBlobConfig {
     public Boolean followRedirect = true;
     public ReadableArray binaryContentTypes = null;
 
+    public Boolean nqmTrustSystem;
     public String nqmCACertificate;
     public String nqmClientCertificate;
     public String nqmClientCertificatePassword;
