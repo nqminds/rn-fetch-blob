@@ -198,7 +198,7 @@ public class RNFetchBlobUtils {
         try {
             Log.i("TOBY", "in getClientCertCAOkHttpClient");
 
-            // Create a trust store from the CA certificate.
+            // Create a trust store from the CA certificates.
             KeyStore trustStore = loadPEMTrustStore(caCertificates);
             TrustManager[] trustManagers = {new RNFetchBlobTrustManager(trustSystem, trustStore)};
 
@@ -217,6 +217,7 @@ public class RNFetchBlobUtils {
 
             OkHttpClient.Builder builder = client.newBuilder();
             builder.sslSocketFactory(sslSocketFactory);
+
             // builder.hostnameVerifier(new HostnameVerifier() {
             //     @Override
             //     public boolean verify(String hostname, SSLSession session) {
