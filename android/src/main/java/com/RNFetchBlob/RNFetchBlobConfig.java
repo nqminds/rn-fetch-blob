@@ -20,7 +20,7 @@ class RNFetchBlobConfig {
     public ReadableArray binaryContentTypes = null;
 
     public Boolean nqmTrustSystem;
-    public String nqmCACertificate;
+    public ReadableArray nqmCACertificate;
     public String nqmClientCertificate;
     public String nqmClientCertificatePassword;
 
@@ -55,7 +55,7 @@ class RNFetchBlobConfig {
         // Default to not using OS trust store.
         this.nqmTrustSystem = options.hasKey("nqmTrustSystem") ? options.getBoolean("nqmTrustSystem") : false;
         // Cache the passed certificate data.
-        this.nqmCACertificate = options.hasKey("nqmCACertificate") ? options.getString("nqmCACertificate") : null;
+        this.nqmCACertificate = options.hasKey("nqmCACertificate") ? options.getArray("nqmCACertificate") : null;
         this.nqmClientCertificate = options.hasKey("nqmClientCertificate") ? options.getString("nqmClientCertificate") : null;
         this.nqmClientCertificatePassword = options.hasKey("nqmClientCertificatePassword") ? options.getString("nqmClientCertificatePassword") : null;
     }
