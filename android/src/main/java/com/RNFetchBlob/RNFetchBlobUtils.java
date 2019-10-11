@@ -28,6 +28,7 @@ import java.security.cert.X509Certificate;
 
 import okhttp3.OkHttpClient;
 
+import com.facebook.react.bridge.ReadableArray;
 
 public class RNFetchBlobUtils {
 
@@ -112,17 +113,22 @@ public class RNFetchBlobUtils {
      * @return a KeyStore (to be used as a trust store) that contains the certificate
      * @throws Exception
      */
-    private static KeyStore loadPEMTrustStore(String certificateString) throws Exception {
-
-        byte[] der = loadPemCertificate(new ByteArrayInputStream(certificateString.getBytes()));
-        ByteArrayInputStream derInputStream = new ByteArrayInputStream(der);
-        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-        X509Certificate cert = (X509Certificate) certificateFactory.generateCertificate(derInputStream);
-        String alias = cert.getSubjectX500Principal().getName();
+    private static KeyStore loadPEMTrustStore(ReadableArray caCertificates) throws Exception {
 
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
         trustStore.load(null);
-        trustStore.setCertificateEntry(alias, cert);
+
+        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+
+        for(int i = 0; i< caCertificates.size();i++) {
+            String certificateString = caCertificates.getString(i);
+            byte[] der = loadPemCertificate(new ByteArrayInputStream(certificateString.getBytes()));
+            ByteArrayInputStream derInputStream = new ByteArrayInputStream(der);
+            X509Certificate cert = (X509Certificate) certificateFactory.generateCertificate(derInputStream);
+            String alias = cert.getSubjectX500Principal().getName();
+
+            trustStore.setCertificateEntry(alias, cert);
+        }
 
         return trustStore;
     }
@@ -188,12 +194,12 @@ public class RNFetchBlobUtils {
         return keyStore;
     }
 
-    public static OkHttpClient.Builder getClientCertCAOkHttpClient(boolean trustSystem, String caCertificate, String p12Base64ClientCertificate, String clientCertificatePassword, OkHttpClient client) {
+    public static OkHttpClient.Builder getClientCertCAOkHttpClient(boolean trustSystem, ReadableArray caCertificates, String p12Base64ClientCertificate, String clientCertificatePassword, OkHttpClient client) {
         try {
             Log.i("TOBY", "in getClientCertCAOkHttpClient");
 
-            // Create a trust store from the CA certificate.
-            KeyStore trustStore = loadPEMTrustStore(caCertificate);
+            // Create a trust store from the CA certificates.
+            KeyStore trustStore = loadPEMTrustStore(caCertificates);
             TrustManager[] trustManagers = {new RNFetchBlobTrustManager(trustSystem, trustStore)};
 
             // Load the client certificate.
@@ -211,6 +217,7 @@ public class RNFetchBlobUtils {
 
             OkHttpClient.Builder builder = client.newBuilder();
             builder.sslSocketFactory(sslSocketFactory);
+
             // builder.hostnameVerifier(new HostnameVerifier() {
             //     @Override
             //     public boolean verify(String hostname, SSLSession session) {
